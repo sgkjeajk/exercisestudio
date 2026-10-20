@@ -173,6 +173,8 @@ body.hc .r-badge{background:#fff; border:2px solid #000}
 .h-ex{list-style:none; margin:0; padding:0; display:grid; gap:.2rem}
 .h-ex li{color:var(--done); font-weight:700}
 .h-keep{margin:.2rem 0 .6rem}
+.h-times{display:block; margin-top:.15rem; font-size:.9rem; font-weight:600; color:var(--muted)}
+body.hc .h-times{color:inherit}
 .h-tools{margin:.6rem 0 1rem; padding:.9rem 1rem; border:var(--bw) solid var(--line); border-radius:16px; display:grid; gap:.6rem}
 .h-tool-row{display:grid; grid-template-columns:1fr 1fr; gap:.5rem}
 .h-tool-row .btn{min-height:2.6rem; padding:.2rem .6rem; font-size:.95rem}
@@ -338,6 +340,7 @@ body.hc .bar{border:2px solid #000}
   <div id="list" tabindex="-1"></div>
 
   <p class="safety">Sit on a sturdy chair that cannot slide, and lie on a firm, comfortable surface. Stop straight away if you feel pain, dizziness, unusual symptoms or unsteadiness. If you are unsure, check with your physiotherapist or doctor.</p>
+  <nav aria-label="Exercise Studio"><a class="btn" href="https://myai118.github.io/exercisestudio/" target="_top" style="display:flex;justify-content:center;text-align:center;text-decoration:none;margin:1.5rem 0">← Back to Exercise Studio</a></nav>
 </main>
 
 <!-- Demo -->
@@ -1071,7 +1074,7 @@ function todayStr(){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function defaults(){
-  var s = { enabled:{}, reps:{}, hold:{}, repRest:{}, sideSel:{}, history:{}, histTime:{}, between:BETWEEN_DEFAULT, sideRest:SIDEREST_DEFAULT,
+  var s = { enabled:{}, reps:{}, hold:{}, repRest:{}, sideSel:{}, history:{}, histTime:{}, histStamp:'', histSavedAt:0, lastBackup:0, between:BETWEEN_DEFAULT, sideRest:SIDEREST_DEFAULT,
             sound:true, voice:false, size:'normal', contrast:false, done:{ date:todayStr(), ids:[] } };
   EXERCISES.forEach(function(e){ s.enabled[e.id]=true; s.reps[e.id]=e.reps; s.hold[e.id]=e.hold; s.repRest[e.id]=e.rest; s.sideSel[e.id]='both'; });
   return s;
@@ -1081,23 +1084,27 @@ var storageOK = (function(){
   try{ var k='__nuhcoach_test'; localStorage.setItem(k,'1'); var ok = localStorage.getItem(k)==='1'; localStorage.removeItem(k); return ok; }
   catch(err){ return false; }
 })();
-try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(err){}
+try{ if(navigator.storage && navigator.storage.persist){ var pr = navigator.storage.persist(); if(pr && pr.catch) pr.catch(function(){}); } }catch(err){}
 function readSaved(){
   try{ var raw = localStorage.getItem(KEY); if(raw) return raw; }catch(err){}
   try{ if(typeof window.name==='string' && window.name.indexOf(NAME_TAG)===0) return window.name.slice(NAME_TAG.length); }catch(err){}   // fallback copy (survives a page reload)
   return null;
 }
 // Merge history records (from saved data or a backup) into state, ignoring anything invalid.
-function mergeHistory(target,hist,times){
+function mergeHistory(target,hist,times,keepUnknown){
   var ids = EXERCISES.map(function(e){ return e.id; });
+  function okId(id){ return typeof id==='string' && (ids.indexOf(id)>-1 || (keepUnknown && /^[A-Za-z0-9_-]{1,40}$/.test(id))); }
   function addTo(date,list){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(list)) return;
-    list.forEach(function(id){ if(ids.indexOf(id)>-1){ var a = target.history[date] || (target.history[date]=[]); if(a.indexOf(id)<0) a.push(id); } });
+    list.forEach(function(id){ if(okId(id)){ var a = target.history[date] || (target.history[date]=[]); if(a.indexOf(id)<0) a.push(id); } });
   }
   if(hist && typeof hist==='object') Object.keys(hist).forEach(function(d){ addTo(d,hist[d]); });
   if(times && typeof times==='object') Object.keys(times).forEach(function(d){
-    var m = times[d]; if(!m || !target.history[d]) return;
-    Object.keys(m).forEach(function(id){ if(target.history[d].indexOf(id)>-1 && /^\d\d:\d\d$/.test(m[id])){ (target.histTime[d]||(target.histTime[d]={}))[id]=m[id]; } });
+    var m = times[d]; if(!m || typeof m!=='object' || !target.history[d]) return;
+    Object.keys(m).forEach(function(id){
+      if(target.history[d].indexOf(id)<0) return;
+      (Array.isArray(m[id]) ? m[id] : [m[id]]).forEach(function(hm){ addTimeTo(target,d,id,hm); });
+    });
   });
   return addTo;
 }
@@ -1124,17 +1131,38 @@ function load(){
   // history has its own storage entry and is only ever removed when you delete it.
   var hobj = null;
   try{ var hraw = localStorage.getItem(HIST_KEY); if(hraw) hobj = JSON.parse(hraw); }catch(err){}
-  if(hobj && hobj.h && typeof hobj.h==='object') mergeHistory(s, hobj.h, hobj.t);
+  if(hobj && hobj.h && typeof hobj.h==='object'){ mergeHistory(s, hobj.h, hobj.t, true); s.histStamp = hobj.n||''; s.histSavedAt = hobj.u||0; s.lastBackup = hobj.b||0; }
   else if(p) mergeHistory(s, p.history, p.histTime);
   return s;
 }
 var S = load();
 applyHolds();
-function save(){
+function readHistStore(){
+  try{ var raw = localStorage.getItem(HIST_KEY); if(raw){ var o = JSON.parse(raw); if(o && typeof o==='object') return o; } }catch(err){}
+  return null;
+}
+// If another tab (or a page left open since yesterday) saved newer history, bring it in before writing, so nothing is lost.
+function pullHistory(){
+  var cur = readHistStore();
+  if(cur && cur.n && cur.n!==S.histStamp && cur.h) mergeHistory(S, cur.h, cur.t, true);
+}
+function save(replaceHistory){
+  if(!replaceHistory) pullHistory();
+  S.histStamp = String(Date.now())+'-'+Math.random().toString(36).slice(2,8);
+  S.histSavedAt = Date.now();
   var json = JSON.stringify(S);
   try{ localStorage.setItem(KEY, json); }catch(err){}
-  try{ localStorage.setItem(HIST_KEY, JSON.stringify({ h:S.history, t:S.histTime })); }catch(err){}
+  try{ localStorage.setItem(HIST_KEY, JSON.stringify({ h:S.history, t:S.histTime, n:S.histStamp, u:S.histSavedAt, b:S.lastBackup||0 })); }catch(err){}
   try{ window.name = NAME_TAG+json; }catch(err){}
+}
+// Re-read history that another tab saved (used when this page comes back to the front).
+function syncHistory(){
+  var cur = readHistStore();
+  if(!cur || !cur.h || (cur.n && cur.n===S.histStamp)) return false;
+  S.history = {}; S.histTime = {};
+  mergeHistory(S, cur.h, cur.t, true);
+  S.histStamp = cur.n||''; S.histSavedAt = cur.u||0; S.lastBackup = cur.b||S.lastBackup||0;
+  return true;
 }
 
 /* ---------- Helpers ---------- */
@@ -1172,9 +1200,23 @@ function clock(sec){
   return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
 }
 function freshDone(){ if(S.done.date!==todayStr()) S.done = { date:todayStr(), ids:[] }; }
-function addHistory(id){
+// Time of day (HH:MM) an exercise was done. Done again the same day: the new time is added next to the first one.
+function nowHM(){ var d = new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function timesIn(target,date,id){
+  var m = target.histTime && target.histTime[date], v = m && m[id];
+  return Array.isArray(v) ? v : (typeof v==='string' && v ? [v] : []);
+}
+function addTimeTo(target,date,id,hm){
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(hm||'')) return false;
+  var m = target.histTime[date] || (target.histTime[date]={}), a = timesIn(target,date,id).slice();
+  if(a.indexOf(hm)>-1) return false;
+  a.push(hm); a.sort(); m[id] = a;
+  return true;
+}
+function addHistory(id,noTime){
   var k = todayStr(), a = S.history[k] || (S.history[k]=[]);
   if(a.indexOf(id)<0) a.push(id);
+  if(!noTime) addTimeTo(S,k,id,nowHM());
 }
 function isDone(e){
   var h = S.history[todayStr()];
@@ -1353,16 +1395,21 @@ $('routine').addEventListener('click',function(ev){
 /* ---------- History ---------- */
 var delArmed = '', histEdit = false, backupOpen = false, histOpen = {}, histSel = {}, delTimer = null;
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function savedText(ts){
+  var d = new Date(ts), t = new Date(), same = d.toDateString()===t.toDateString();
+  var hm = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  return same ? 'today, '+hm : d.toLocaleDateString(undefined,{day:'numeric',month:'short'})+', '+hm;
+}
 function niceDate(key){
   var p = key.split('-'), d = new Date(+p[0], +p[1]-1, +p[2]);
   return d.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 function renderHistory(){
-  var dates = Object.keys(S.history).filter(function(k){ return S.history[k].length; }).sort().reverse();
+  var dates = Object.keys(S.history).filter(function(k){ return EXERCISES.some(function(e){ return S.history[k].indexOf(e.id)>-1; }); }).sort().reverse();
   var today = todayStr();
   var html = '<div class="r-wrap"><button class="btn r-back" id="hBack" type="button">← Back</button><div class="r-card">'+
     '<div class="h-head"><h2 class="r-title">Exercise history</h2><button class="btn h-edit" type="button" id="hEdit">'+(histEdit ? 'Done' : 'Edit')+'</button></div>'+
-    '<p class="r-note h-keep">Kept on this device until you delete it.</p>';
+    '<p class="r-note h-keep">Kept on this device until you delete it.'+(S.histSavedAt ? ' Last saved '+esc(savedText(S.histSavedAt))+'.' : '')+'</p>';
   if(histEdit && dates.length){
     var nsel = dates.filter(function(k){ return histSel[k]; }).length;
     html += '<div class="h-tools"><p class="r-note">Tick one or more dates to delete them, or delete everything.</p>'+
@@ -1375,6 +1422,7 @@ function renderHistory(){
     html += '<div class="h-add"><h3>Add a record</h3><p class="r-note">Use this to fix a wrong date or add something you did. To move a record, remove it and add it on the right date.</p>'+
       '<label>Date <input type="date" id="hDate" value="'+today+'" max="'+today+'"></label>'+
       '<label>Exercise <select id="hEx">'+EXERCISES.map(function(e){ return '<option value="'+e.id+'">'+esc(e.name)+'</option>'; }).join('')+'</select></label>'+
+      '<label>Time (optional) <input type="time" id="hTime"></label>'+
       '<button class="btn primary" type="button" id="hAdd">Add to history</button><p class="r-note" id="hMsg" role="status"></p></div>';
   }
   if(!dates.length){
@@ -1390,7 +1438,8 @@ function renderHistory(){
           '<span class="h-date">'+(k===today?'Today · ':'')+esc(niceDate(k))+'</span>'+
           '<span class="h-plus" aria-hidden="true">'+(open ? '−' : '+')+'</span></button>')+
         (open ? '<ul class="h-ex">'+done.map(function(e){
-          return '<li><span>✓ '+esc(e.name)+'</span>'+
+          var tms = timesIn(S,k,e.id);
+          return '<li><span>✓ '+esc(e.name)+(tms.length ? '<span class="h-times">🕒 '+esc(tms.join(', '))+'</span>' : '')+'</span>'+
             (histEdit ? '<button class="btn h-rm" type="button" data-rm="'+k+'|'+e.id+'" aria-label="Remove '+esc(e.name)+' from this day">Remove</button>' : '')+'</li>';
         }).join('')+'</ul>' : '')+'</li>';
     });
@@ -1398,6 +1447,7 @@ function renderHistory(){
   }
   html += '<details class="h-backup"'+(backupOpen?' open':'')+'><summary>Back up or restore history</summary>'+
     '<p class="r-note">Copy this text and keep it somewhere safe. To restore, paste it in the box below and tap Restore. Restoring adds to what is already here.</p>'+
+    '<p class="r-note">Last backup copied: '+(S.lastBackup ? esc(savedText(S.lastBackup)) : 'never')+'. If your history ever disappears, the browser has usually cleared its saved data (private tabs, some in-app viewers, or a setting that clears site data when the browser closes). A backup lets you bring it back.</p>'+
     '<textarea id="hBackup" readonly rows="3">'+esc(JSON.stringify({history:S.history,histTime:S.histTime}))+'</textarea>'+
     '<button class="btn" type="button" id="hCopy">Copy backup</button>'+
     '<textarea id="hPaste" rows="3" placeholder="Paste a backup here"></textarea>'+
@@ -1423,24 +1473,33 @@ $('openHistory').addEventListener('click',openHistory);
 // Deleting is the only way history is ever removed.
 function deleteDates(keys){
   var today = todayStr();
+  syncHistory();
   keys.forEach(function(k){
     delete S.history[k]; delete S.histTime[k];
     if(k===today) S.done = { date:today, ids:[] };     // keep the "done today" tags consistent
   });
-  save();
+  save(true);
 }
 function deleteAllHistory(){
   S.history = {}; S.histTime = {}; S.done = { date:todayStr(), ids:[] };
-  save();
+  save(true);
 }
-function addRecord(date,id){
+function addRecord(date,id,hm){
   var today = todayStr();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date||'')) return 'Please pick a date.';
   if(date>today) return 'That date is in the future.';
   if(!byId(id)) return 'Please pick an exercise.';
+  if(hm && !/^([01]\d|2[0-3]):[0-5]\d$/.test(hm)) return 'Please check the time.';
+  syncHistory();
   var a = S.history[date] || (S.history[date]=[]);
-  if(a.indexOf(id)>-1) return byId(id).name+' is already recorded on that day.';
-  a.push(id); save();
+  if(a.indexOf(id)>-1){
+    // already recorded that day: a different time is added next to the existing time(s)
+    if(hm && addTimeTo(S,date,id,hm)){ save(); return ''; }
+    return byId(id).name+' is already recorded on that day'+(hm ? ' at that time.' : '. Enter a time to add another time.');
+  }
+  a.push(id);
+  if(hm) addTimeTo(S,date,id,hm);
+  save();
   return '';
 }
 $('history').addEventListener('click',function(ev){
@@ -1454,6 +1513,7 @@ $('history').addEventListener('click',function(ev){
   }
   if(ev.target.closest('#hCopy')){
     backupOpen = true;
+    S.lastBackup = Date.now(); save();
     var box = $('hBackup'), text = box.value;
     function done(ok){ $('hBMsg').textContent = ok ? 'Copied.' : 'Select the text above and copy it.'; }
     try{
@@ -1475,20 +1535,23 @@ $('history').addEventListener('click',function(ev){
   var rm = ev.target.closest('[data-rm]');
   if(rm){
     var parts = rm.dataset.rm.split('|'), d = parts[0], id = parts[1];
+    syncHistory();
     if(S.history[d]){
       S.history[d] = S.history[d].filter(function(x){ return x!==id; });
       if(S.histTime[d]) delete S.histTime[d][id];
       if(d===todayStr()) S.done.ids = S.done.ids.filter(function(x){ return x!==id; });
       if(!S.history[d].length){ delete S.history[d]; delete S.histTime[d]; }
-      save(); renderHistory(); renderHome();
+      save(true); renderHistory(); renderHome();
     }
     return;
   }
   if(ev.target.closest('#hAdd')){
-    var msg = addRecord($('hDate').value, $('hEx').value);
+    var msg = addRecord($('hDate').value, $('hEx').value, $('hTime') ? $('hTime').value : '');
     if(msg){ $('hMsg').textContent = msg; return; }
-    var keepDate = $('hDate').value;
+    var keepDate = $('hDate').value, keepEx = $('hEx').value;
     renderHistory(); renderHome();
+    if($('hDate')) $('hDate').value = keepDate;
+    if($('hEx')) $('hEx').value = keepEx;
     $('hMsg').textContent = 'Added.';
     return;
   }
@@ -1673,7 +1736,7 @@ function buildSteps(list){
 function saveSession(){
   if(!sess || sess.finished) return;
   var rem = (sess.stopped || sess.paused) ? sess.remaining : Math.max(0, sess.endAt-Date.now());
-  try{ localStorage.setItem(SESS_KEY, JSON.stringify({ ids:sess.list.map(function(e){ return e.id; }), i:sess.i, remaining:Math.round(rem), at:Date.now() })); }catch(err){}
+  try{ localStorage.setItem(SESS_KEY, JSON.stringify({ ids:sess.list.map(function(e){ return e.id; }), i:sess.i, remaining:Math.round(rem), at:Date.now(), timed:sess.timed||[] })); }catch(err){}
 }
 function clearSession(){ try{ localStorage.removeItem(SESS_KEY); }catch(err){} }
 function restoreSession(){
@@ -1687,7 +1750,7 @@ function restoreSession(){
     if(!list.length){ clearSession(); return; }
     var steps = buildSteps(list), i = Math.max(0, Math.min(steps.length-1, +p.i||0)), dur = steps[i].dur*1000;
     sess = { list:list, steps:steps, i:i, paused:true, stopped:true, finished:false, completed:[], timer:null,
-             endAt:0, dur:dur, remaining:Math.max(0, Math.min(dur, +p.remaining||dur)), lastSec:null, phase:null, holdSec:null, prev:null };
+             endAt:0, dur:dur, remaining:Math.max(0, Math.min(dur, +p.remaining||dur)), lastSec:null, phase:null, holdSec:null, prev:null, timed:(Array.isArray(p.timed) ? p.timed.filter(function(x){ return typeof x==='string'; }) : []) };
   }catch(err){ clearSession(); }
 }
 function stopPreview(){ if(sess && sess.prev){ sess.prev.stop(); sess.prev = null; } }
@@ -1891,10 +1954,12 @@ function sideSkip(st){
 function isFinalRep(st){ return st.type==='rep' && st.rep===repsOf(st.ex) && st.k===sidesOf(st.ex).length-1; }
 
 function recordDone(id){
+  var newRun = true;
+  if(sess){ if(!sess.timed) sess.timed = []; if(sess.timed.indexOf(id)>-1) newRun = false; else sess.timed.push(id); }
   if(sess && sess.completed.indexOf(id)<0) sess.completed.push(id);
   freshDone();
   if(S.done.ids.indexOf(id)<0) S.done.ids.push(id);
-  addHistory(id);            // the same exercise twice in a day still counts as one entry
+  addHistory(id, !newRun);            // the same exercise twice in a day still counts as one entry
   save();
 }
 // Manual: "I did this one" (for when you skipped ahead or stopped early)
@@ -2081,6 +2146,12 @@ $('list').addEventListener('click',function(ev){
 });
 
 if(window.addEventListener) window.addEventListener('pagehide',function(){ if(sess && !sess.finished && !sess.stopped) saveSession(); });
+function refreshFromStore(){ if(syncHistory()){ renderHome(); if(!$('history').hidden) renderHistory(); } }
+document.addEventListener('visibilitychange',function(){ if(!document.hidden) refreshFromStore(); });
+if(window.addEventListener){
+  window.addEventListener('pageshow',function(e){ if(e.persisted) refreshFromStore(); });
+  window.addEventListener('storage',function(e){ if(e.key===HIST_KEY) refreshFromStore(); });
+}
 restoreSession();
 applyDisplay();
 renderHome();
