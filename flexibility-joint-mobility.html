@@ -255,6 +255,40 @@ body.hc .bar{border:2px solid #000}
 .s-set{font-weight:700; font-size:1.25rem; color:var(--phase); line-height:1.25}
 @media (min-height:820px){.stage-s{width:min(100%,40dvh)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Readable dropdowns across all Exercise Studio pages. */
+select, select.btn, .h-add select {
+  font-family:inherit;
+  font-size:max(20px, 1.1rem);
+  font-weight:600;
+  line-height:1.4;
+  min-height:56px;
+  padding:.6rem .75rem;
+  max-width:100%;
+}
+select option, select optgroup { font-family:inherit; font-size:1em; font-weight:600; }
+
+/* Give the live exercise animation the full available card width. */
+#session .s-card{padding:.7rem .75rem 0;gap:.2rem}
+#session .stage-s,
+#session.p-ready .stage-s,
+#session.p-rest .stage-s{
+ width:100%;max-width:32rem;aspect-ratio:5/4;flex-shrink:0;
+}
+#session .s-count{font-size:2.7rem;line-height:1.05;margin-top:0}
+#session .s-cap{min-height:1.45rem;margin-top:.15rem}
+#session .s-btns{padding-top:.5rem}
+
+/* Keep session controls below the content, including on short screens. */
+#session .s-card{height:auto;min-height:min-content;flex-shrink:0}
+#session .s-card > *{flex-shrink:0}
+#session .s-btns{
+ position:static;bottom:auto;margin-top:.8rem;flex-shrink:0;
+ padding:.5rem 0 calc(.8rem + env(safe-area-inset-bottom,0px));
+ background:var(--surface);
+}
+
+.category-art{margin:0 0 1rem;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#e7f3ef}.category-art img{display:block;width:100%;height:auto;object-fit:contain}
 </style>
 </head>
 <body>
@@ -272,6 +306,7 @@ body.hc .bar{border:2px solid #000}
 </header>
 
 <main>
+  <figure class="category-art"><img src="assets/flexibility-studio-v2.webp" width="1942" height="809" alt="Seated hamstring stretch for flexibility and joint mobility" decoding="async"></figure>
   <section class="disclaimer" aria-labelledby="discTitle"><h2 id="discTitle">Before you start</h2><p>For general exercise information. Follow your physiotherapist’s advice and any surgery restrictions. Use a fixed support for balance work. Stop for pain, dizziness or unusual breathlessness. Floor exercises are optional if transfers are unsafe.</p><p>Choose comfortable settings and rest as needed. None of these exercises guarantees a cure or prevents all falls.</p></section>
 
   <section class="warn" id="storeWarn" hidden>
@@ -297,11 +332,21 @@ body.hc .bar{border:2px solid #000}
     <p class="hint">This shows today's routine first, so you can check it and watch demos before you begin. Or start one exercise from the list below.</p>
   </section>
 
+  <details class="plan"><summary>Starting settings and gradual progression</summary>
+    <p>General starting guidance for an adult who can perform these movements safely; it is not an individual rehabilitation prescription. If you need help standing, have recent illness or surgery, or are unsure which exercises are safe, ask your physiotherapist for an adapted plan first.</p>
+    <p>Practise gently 3–5 days a week. Stretch only to comfortable tension, without bouncing or forcing the range.</p>
+    <div style="overflow-x:auto"><table style="width:100%;font-size:.9rem;border-collapse:collapse"><caption>Sets × repetitions or duration for each progression level</caption><thead><tr><th scope="col">Exercise</th><th scope="col">Level 1</th><th scope="col">Level 2</th><th scope="col">Level 3</th><th scope="col">Level 4</th></tr></thead><tbody><tr><th scope="row">Hamstring and hip-flexor stretches (each side)</th><td>2 × 10-sec holds</td><td>2 × 15-sec holds</td><td>2 × 20-sec holds</td><td>2 × 20-sec holds</td></tr><tr><th scope="row">Other four mobility exercises</th><td>1 × 5 reps</td><td>1 × 6 reps</td><td>1 × 8 reps</td><td>1 × 10 reps</td></tr></tbody></table></div>
+    <p>Rest 15 seconds between sets or sides and 15 seconds between exercises by default; take longer if needed. No scheduled rest between repetitions. Demonstration speed: Normal (1×); choose Slow to learn the movement. Demo speed does not change the exercise-session timings.</p>
+    <p>Trunk rotation pauses for 2 seconds; wall slides pause for 1 second. Leave out floor-based cat-cow if you cannot get onto and off the mat safely.</p>
+    <p>In Settings, use Apply level 1–4 to change the timings. Nothing advances automatically. Only progress after the current workload is comfortable and controlled, with no increased pain or unusual fatigue later that day or the next day.</p>
+    <p>Basis: <a href="https://www.nhs.uk/live-well/exercise/strength-exercises/" target="_blank" rel="noopener">NHS strength</a>, <a href="https://www.nhs.uk/live-well/exercise/balance-exercises/" target="_blank" rel="noopener">NHS balance</a>, <a href="https://www.nhs.uk/live-well/exercise/flexibility-exercises/" target="_blank" rel="noopener">NHS flexibility</a> and <a href="https://www.nhs.uk/live-well/exercise/walking-for-health/" target="_blank" rel="noopener">NHS walking</a>. Exact progression steps and rest intervals are suggested app presets; they are not an individual treatment prescription.</p>
+  </details>
+
   <div id="list" tabindex="-1"></div>
 
   <p class="safety">Keep a sturdy chair, rail or wall within reach. Stop straight away if you feel pain, dizziness, unusual shortness of breath or unsteadiness. If you are unsure, check with your doctor or physiotherapist.</p>
-  <details class="plan"><summary>Exercise guidance sources</summary><p>Instructions adapted in plain language; the animations are illustrations, not measurements of your movement.</p><ul><li><a target="_blank" rel="noopener noreferrer" href="https://www.nhs.uk/live-well/exercise/balance-exercises/">NHS balance exercises</a></li><li><a target="_blank" rel="noopener noreferrer" href="https://www.nhs.uk/live-well/exercise/flexibility-exercises/">NHS flexibility exercises</a></li><li><a target="_blank" rel="noopener noreferrer" href="https://www.nhs.uk/live-well/exercise/sitting-exercises/">NHS sitting exercises</a></li><li><a target="_blank" rel="noopener noreferrer" href="https://www.nth.nhs.uk/resources/standing-exercises/">NHS standing exercises</a></li><li><a target="_blank" rel="noopener noreferrer" href="https://www.sussexcommunity.nhs.uk/patients-and-visitors/resources/patient-resources/sciatica/rehabilitation-exercises">NHS cat-cow guidance</a></li><li><a target="_blank" rel="noopener noreferrer" href="https://www.worcsacute.nhs.uk/leaflets/lower-limb-strengthening-exercises/">NHS lower limb strengthening</a></li><li><a target="_blank" rel="noopener noreferrer" href="https://www.nia.nih.gov/health/exercise-and-physical-activity/three-types-exercise-can-improve-your-health-and-physical">National Institute on Aging: types of exercise</a></li></ul></details>
-  <nav aria-label="Exercise Studio"><a class="btn" href="index.html" target="_top" style="display:flex;justify-content:center;text-align:center;text-decoration:none;margin:1.5rem 0">← Back to Exercise Studio</a></nav>
+  
+  <nav aria-label="Exercise Studio"><a class="btn" href="https://myai118.github.io/exercisestudio/" target="_top" style="display:flex;justify-content:center;text-align:center;text-decoration:none;margin:1.5rem 0">← Back to Exercise Studio</a></nav>
 </main>
 
 <!-- Demo -->
@@ -349,6 +394,11 @@ body.hc .bar{border:2px solid #000}
       <button class="btn primary" id="closeSettings" type="button">Done</button>
     </div>
     <div class="dlg-body">
+      <section class="sec"><h3>Starting settings and gradual progression</h3>
+        <p class="help">Level 1 is the starting default. Apply a higher level only when the current level feels manageable, with controlled movement and no increased pain or unusual fatigue later that day or the next day. Stay at the same level or reduce the workload whenever needed. These buttons replace timings and set demo speed to Normal; they keep your chosen exercises and history.</p>
+        <div class="tools"><button type="button" class="btn" data-training-level="1">Apply level 1</button><button type="button" class="btn" data-training-level="2">Apply level 2</button><button type="button" class="btn" data-training-level="3">Apply level 3</button><button type="button" class="btn" data-training-level="4">Apply level 4</button></div>
+        <p class="help" id="trainingPresetStatus" role="status" aria-live="polite"></p>
+      </section>
       <section class="sec">
         <h3>Exercises for today</h3>
         <p class="help">Tick the exercises you want in "Start all". You can still start any exercise on its own from the main list. For each one you can change the sets, reps, hold time (where it applies) and the rest between sets. Rest between reps is optional (leave it blank for none). The time per set is worked out for you.</p>
@@ -821,7 +871,7 @@ function glMesh(verts,idx){
   return { vb:vb, ib:ib, n:idx.length };
 }
 function buildMeshes(){
-  var v=[],ix=[],i,j,LA=16,LO=28;
+  var v=[],ix=[],i,j,LA=24,LO=40;
   for(i=0;i<=LA;i++){ var th=Math.PI*i/LA; for(j=0;j<=LO;j++){ var ph=2*Math.PI*j/LO, x=Math.sin(th)*Math.cos(ph), y=Math.cos(th), z=Math.sin(th)*Math.sin(ph); v.push(x,y,z,x,y,z); } }
   for(i=0;i<LA;i++) for(j=0;j<LO;j++){ var a=i*(LO+1)+j, b=a+LO+1; ix.push(a,b,a+1,b,b+1,a+1); }
   glM.sphere=glMesh(v,ix);
@@ -905,15 +955,36 @@ function glFigure(o,k,p){
     o.cap(a.elbow,a.hand,.037,.03,CLR.skin,true);
     o.ball(a.hand,.042,CLR.skin,true);
   });
-  // neck and head
+  // Original stylized studio character: sculpted face, swept hair and calm expression.
   var hd=unit(k.chest,k.head), hp=k.head;
-  o.cap(k.chest,add3(hp,hd,-.05),.048,.042,CLR.skin,true);
+  o.cap(k.chest,add3(hp,hd,-.065),.045,.038,CLR.skin,true);
   var n=sub3(k.fwd,[hd[0]*dot3(k.fwd,hd),hd[1]*dot3(k.fwd,hd),hd[2]*dot3(k.fwd,hd)]); n=len3(n)<1e-3?perpPair(hd)[0]:nrm3(n);
   var hl=nrm3(cross3(hd,n));
-  o.ell(hp,hl,hd,n,.098,.112,.106,CLR.skin,true);
-  o.ell(add3(add3(hp,n,-.03),hd,.018),hl,hd,n,.104,.112,.108,CLR.hair,true);       // hair
-  o.ball(add3(hp,n,.106),.019,CLR.skin,false);                                        // nose
-  [-1,1].forEach(function(sd){ o.ball(add3(add3(add3(hp,n,.087),hl,.037*sd),hd,.014),.014,CLR.eye,false); });
+  function face(x,y,z){return add3(add3(add3(hp,hl,x),hd,y),n,z);}
+  function detail(x,y,z,sx,sy,sz,col,shadow){o.ell(face(x,y,z),hl,hd,n,sx,sy,sz,col,!!shadow);}
+  // Shaped cheekbones and jaw replace the featureless oval head.
+  detail(0,.008,0,.09,.111,.094,CLR.skin,true);
+  detail(0,-.057,.013,.073,.053,.073,CLR.skin,true);
+  [-1,1].forEach(function(sd){
+    detail(sd*.089,-.008,-.008,.014,.024,.018,CLR.skin,true);
+    detail(sd*.034,.023,.086,.018,.011,.008,'#F6F2EB',false);
+    detail(sd*.034,.023,.094,.007,.007,.0035,'#5C4636',false);
+    detail(sd*.034,.023,.097,.0035,.0045,.002,'#242D34',false);
+    detail(sd*.032,.026,.099,.0018,.0018,.001,'#FFFFFF',false);
+    // Brows follow the curved face rather than protruding spherical eyes.
+    o.cap(face(sd*.018,.046,.087),face(sd*.050,.044,.078),.004,.003,CLR.hair,false);
+  });
+  detail(0,.003,.094,.012,.026,.012,CLR.skin,true);
+  detail(0,-.013,.107,.014,.011,.013,CLR.skin,true);
+  // Small closed smile and a softly defined chin.
+  var smile=[[-.028,-.042,.085],[-.014,-.048,.091],[0,-.050,.093],[.014,-.048,.091],[.028,-.042,.085]];
+  for(var si=1;si<smile.length;si++)o.cap(face.apply(null,smile[si-1]),face.apply(null,smile[si]),.0026,.0026,'#975D50',false);
+  detail(0,-.073,.065,.035,.011,.008,'#E6B392',false);
+  // Short tapered hair with a swept quiff: deliberately illustrated, not a real person's likeness.
+  detail(0,.023,-.047,.091,.094,.061,CLR.hair,true);
+  detail(0,.081,-.010,.094,.049,.085,CLR.hair,true);
+  detail(-.019,.108,.012,.077,.025,.064,'#49382E',true);
+  [-1,1].forEach(function(sd){detail(sd*.081,.037,-.016,.009,.032,.028,'#685348',true);});
 }
 function glRender(W,H,sc,st,left){
   if(!glInit()) return null;
@@ -1220,7 +1291,7 @@ var EXERCISES = [
   }
 ];
 var READY_SECONDS = 5;
-var BETWEEN_DEFAULT = 30;
+var BETWEEN_DEFAULT = 15;
 var KEY = 'mobility-flexibility-joint-mobility.v1', OLD_KEY = 'mobility-flexibility-joint-mobility.v0', HIST_KEY = 'mobility-flexibility-joint-mobility.history';
 var OLD_REPS = {}, OLD_REST = {};
 
@@ -1232,7 +1303,7 @@ function todayStr(){
 function defaults(){
   var s = { exerciseSpeed:1, enabled:{}, sets:{}, reps:{}, hold:{}, rest:{}, repRest:{}, history:{}, histTime:{}, histStamp:'', histSavedAt:0, lastBackup:0, between:BETWEEN_DEFAULT, sound:true, voice:false, size:'normal', contrast:false,
             done:{ date:todayStr(), ids:[] } };
-  EXERCISES.forEach(function(e){ s.enabled[e.id]=true; s.sets[e.id]=e.sets; s.reps[e.id]=e.reps; s.rest[e.id]=e.rest; s.repRest[e.id]=0; s.hold[e.id]=e.hold||0; });
+  EXERCISES.forEach(function(e){ s.enabled[e.id]=true; s.sets[e.id]=e.sets; s.reps[e.id]=e.reps; s.rest[e.id]=15; s.repRest[e.id]=0; s.hold[e.id]=e.hold||0; });
   return s;
 }
 // Some in-app viewers block or wipe local storage. Detect that so we can warn instead of failing silently.
@@ -1278,7 +1349,7 @@ function load(){
       if(p.reps && p.reps[e.id]>=1 && p.reps[e.id]!==OLD_REPS[e.id]) s.reps[e.id]=p.reps[e.id];   // keep only values you changed yourself
       if(p.repRest && p.repRest[e.id]>=0) s.repRest[e.id]=p.repRest[e.id];
       if(e.hold && p.hold && p.hold[e.id]>=1 && p.hold[e.id]<=30) s.hold[e.id]=p.hold[e.id];
-      if(p.rest && p.rest[e.id]>=0 && p.rest[e.id]!==OLD_REST[e.id]) s.rest[e.id]=p.rest[e.id];   // keep only rests you changed yourself
+      if(p.rest && p.rest[e.id]>=0) s.rest[e.id]=p.rest[e.id];   // keep only rests you changed yourself
     });
     if(p.between>=0) s.between=p.between;
     ['sound','voice','contrast'].forEach(function(k){ if(typeof p[k]==='boolean') s[k]=p[k]; });
@@ -1476,7 +1547,18 @@ function renderHome(){
 
 /* ---------- Demo dialog ---------- */
 var demoPlayer = null;
-document.querySelectorAll('[data-view]').forEach(function(b){b.addEventListener('click',function(){if(!demoPlayer)return;demoPlayer.sc.cam.yaw=+b.dataset.view;document.querySelectorAll('[data-view]').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});demoPlayer.frame();});});
+// Each exercise has a recommended camera that keeps its working limbs visible.
+var DEMO_CAMERA_PRESETS = {"hamstring": [25, 10], "hipflexor": [-20, 10], "trunkrotation": [45, 10], "shoulderroll": [65, 10], "wallslide": [-30, 10], "catcow": [-20, 18, 3.7]};
+function applyDemoView(sc,view){
+ var id=Object.keys(SCENES).filter(function(k){return SCENES[k]===sc;})[0];
+ var cfg=DEMO_CAMERA_PRESETS[id]||[25,12];
+ sc.cam.yaw=view==='25'?cfg[0]:+view;
+ sc.cam.pitch=view==='25'?cfg[1]:(view==='0'?Math.min(cfg[1],15):Math.min(cfg[1],35));
+ if(cfg[2]&&sc.glv)sc.glv.dist=cfg[2];
+ document.querySelectorAll('[data-view]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.view===view));});
+}
+Object.keys(DEMO_CAMERA_PRESETS).forEach(function(id){var sc=SCENES[id],cfg=DEMO_CAMERA_PRESETS[id];if(!sc)return;sc.cam.yaw=cfg[0];sc.cam.pitch=cfg[1];if(cfg[2]&&sc.glv)sc.glv.dist=cfg[2];});
+document.querySelectorAll('[data-view]').forEach(function(b){b.addEventListener('click',function(){if(!demoPlayer)return;applyDemoView(demoPlayer.sc,b.dataset.view);demoPlayer.frame();});});
 function setSpeed(v){
   S.exerciseSpeed = v; save();
   $('exerciseSpeed').value = String(v);
@@ -1502,7 +1584,7 @@ function openDemo(id){
   $('demoMistake').textContent = e.mistake;
   $('demoYT').href = demoUrl(e);
   $('dPlay').textContent = 'Pause';
-  SCENES[e.id].cam.yaw=25;document.querySelectorAll('[data-view]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.view==='25'));});
+  applyDemoView(SCENES[e.id],'25');
   if(demoPlayer){ demoPlayer.stop(); demoPlayer = null; }
   $('demoDlg').showModal();
   demoPlayer = new DemoPlayer($('demoCanvas'), $('demoCap'), e.id, !!(e.sides||e.setLabels));   // left leg first
@@ -1824,6 +1906,15 @@ $('exerciseSpeed').addEventListener('change',function(){
   var v=+this.value; if([0.5,0.75,1].indexOf(v)<0) return;
   setSpeed(v);
 });
+var PROGRESSION_PRESETS = [{"hamstring": {"sets": 1, "reps": 2, "hold": 10, "rest": 30, "repRest": 0}, "hipflexor": {"sets": 1, "reps": 2, "hold": 10, "rest": 30, "repRest": 0}, "trunkrotation": {"sets": 1, "reps": 5, "hold": 2, "rest": 30, "repRest": 0}, "shoulderroll": {"sets": 1, "reps": 5, "hold": 0, "rest": 30, "repRest": 0}, "wallslide": {"sets": 1, "reps": 5, "hold": 1, "rest": 30, "repRest": 0}, "catcow": {"sets": 1, "reps": 5, "hold": 0, "rest": 30, "repRest": 0}}, {"hamstring": {"sets": 1, "reps": 2, "hold": 15, "rest": 30, "repRest": 0}, "hipflexor": {"sets": 1, "reps": 2, "hold": 15, "rest": 30, "repRest": 0}, "trunkrotation": {"sets": 1, "reps": 6, "hold": 2, "rest": 30, "repRest": 0}, "shoulderroll": {"sets": 1, "reps": 6, "hold": 0, "rest": 30, "repRest": 0}, "wallslide": {"sets": 1, "reps": 6, "hold": 1, "rest": 30, "repRest": 0}, "catcow": {"sets": 1, "reps": 6, "hold": 0, "rest": 30, "repRest": 0}}, {"hamstring": {"sets": 1, "reps": 2, "hold": 20, "rest": 30, "repRest": 0}, "hipflexor": {"sets": 1, "reps": 2, "hold": 20, "rest": 30, "repRest": 0}, "trunkrotation": {"sets": 1, "reps": 8, "hold": 2, "rest": 30, "repRest": 0}, "shoulderroll": {"sets": 1, "reps": 8, "hold": 0, "rest": 30, "repRest": 0}, "wallslide": {"sets": 1, "reps": 8, "hold": 1, "rest": 30, "repRest": 0}, "catcow": {"sets": 1, "reps": 8, "hold": 0, "rest": 30, "repRest": 0}}, {"hamstring": {"sets": 1, "reps": 2, "hold": 20, "rest": 30, "repRest": 0}, "hipflexor": {"sets": 1, "reps": 2, "hold": 20, "rest": 30, "repRest": 0}, "trunkrotation": {"sets": 1, "reps": 10, "hold": 2, "rest": 30, "repRest": 0}, "shoulderroll": {"sets": 1, "reps": 10, "hold": 0, "rest": 30, "repRest": 0}, "wallslide": {"sets": 1, "reps": 10, "hold": 1, "rest": 30, "repRest": 0}, "catcow": {"sets": 1, "reps": 10, "hold": 0, "rest": 30, "repRest": 0}}];
+function applyTrainingWeek(week){
+  var preset=PROGRESSION_PRESETS[week-1]; if(!preset) return;
+  EXERCISES.forEach(function(e){var v=preset[e.id]; ['sets','reps','hold','rest','repRest'].forEach(function(k){S[k][e.id]=v[k];});});
+  S.between=BETWEEN_DEFAULT; S.exerciseSpeed=1;
+  applyHolds(); save(); renderSettings();
+  $('trainingPresetStatus').textContent='Level '+week+' timings applied. Your exercise selections and history are unchanged.';
+}
+document.querySelectorAll('[data-training-level]').forEach(function(b){b.addEventListener('click',function(){applyTrainingWeek(+b.dataset.trainingLevel);});});
 $('openSettings').addEventListener('click',function(){ renderSettings(); $('settings').showModal(); });
 $('closeSettings').addEventListener('click',function(){ $('settings').close(); });
 $('settings').addEventListener('close',function(){ renderHome(); if(!$('routine').hidden) renderRoutine(); });
@@ -1847,7 +1938,7 @@ $('exRows').addEventListener('change',function(ev){
 $('selAll').addEventListener('click',function(){ EXERCISES.forEach(function(e){S.enabled[e.id]=true;}); save(); renderSettings(); });
 $('selNone').addEventListener('click',function(){ EXERCISES.forEach(function(e){S.enabled[e.id]=false;}); save(); renderSettings(); });
 $('resetTiming').addEventListener('click',function(){
-  EXERCISES.forEach(function(e){ S.sets[e.id]=e.sets; S.reps[e.id]=e.reps; S.rest[e.id]=e.rest; S.repRest[e.id]=0; S.hold[e.id]=e.hold||0; });
+  EXERCISES.forEach(function(e){ S.sets[e.id]=e.sets; S.reps[e.id]=e.reps; S.rest[e.id]=15; S.repRest[e.id]=0; S.hold[e.id]=e.hold||0; });
   S.between = BETWEEN_DEFAULT; applyHolds(); save(); renderSettings();
 });
 $('between').addEventListener('change',function(){ S.between = clampNum(this.value,5,180,S.between); this.value=S.between; save(); });
@@ -1879,11 +1970,26 @@ function beep(freq,dur){
     o.start(); o.stop(audioCtx.currentTime+dur+0.05);
   }catch(err){}
 }
+function preferredEnglishVoice(){
+  if(!window.speechSynthesis) return null;
+  var voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+  var english = voices.filter(function(v){ return /^en(?:-|$)/i.test(v.lang||''); });
+  if(!english.length) return null;
+  // The Web Speech API does not expose voice gender consistently. Prefer voices
+  // whose platform names commonly identify a feminine English voice.
+  var feminine = /female|woman|samantha|victoria|karen|moira|tessa|zira|jenny|aria|susan|hazel|siri/i;
+  var preferred = english.filter(function(v){ return feminine.test(v.name||''); });
+  if(!preferred.length) return english[0];
+  // Prefer Singapore English when a matching voice is installed.
+  return preferred.find(function(v){ return /^en[-_]SG/i.test(v.lang||''); }) || preferred[0];
+}
 function speak(text){
   if(!S.voice || !window.speechSynthesis) return;
   try{
     speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(text); u.rate = 0.9;
+    var voice = preferredEnglishVoice();
+    if(voice){ u.voice = voice; u.lang = voice.lang; }
     speechSynthesis.speak(u);
   }catch(err){}
 }
